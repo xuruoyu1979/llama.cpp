@@ -820,7 +820,7 @@ size_t llama_context::get_sampled_logits_count(int32_t idx) {
     output_reorder();
 
     if (sampling.logits == nullptr) {
-        return 0;
+        return model.vocab.n_tokens();
     }
 
     try {
@@ -2977,14 +2977,15 @@ float * llama_get_logits(llama_context * ctx) {
 float * llama_get_logits_ith(llama_context * ctx, int32_t i) {
     ctx->synchronize();
 
-    if (ctx->get_sampled_token_ith(i) != LLAMA_TOKEN_NULL) {
-        return nullptr;
-    }
-    if (ctx->get_sampled_probs_ith(i) != nullptr) {
-        return nullptr;
+    float * res = nullptr;
+
+    res = ctx->get_sampled_logits_ith(i);
+
+    if (!res) {
+        res = ctx->get_logits_ith(i);
     }
 
-    return ctx->get_logits_ith(i);
+    return res;
 }
 
 float * llama_get_embeddings(llama_context * ctx) {
